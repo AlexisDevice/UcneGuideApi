@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
+using UcneGuideApi.DAL;
 
 namespace UcneGuideApi.Models
 {
-    public class ApplicationUser : IdentityUser { }
 
     public class Sugerencia
     {

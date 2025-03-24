@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using UcneGuideApi.DAL;
 
 namespace UcneGuideApi.Models
 {

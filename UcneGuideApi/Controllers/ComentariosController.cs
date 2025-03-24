@@ -5,34 +5,41 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Security.Claims;
 using UcneGuideApi.DAL;
 using UcneGuideApi.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace UcneGuideApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] // Asegura que solo los usuarios autenticados puedan acceder
     public class ComentariosController : ControllerBase
     {
         private readonly Contexto _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ComentariosController(Contexto context)
+        public ComentariosController(Contexto context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: api/Comentarios
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Comentario>>> GetComentarios()
         {
-            return await _context.Comentarios.ToListAsync();
+            return await _context.Comentarios.Include(c => c.Usuario).ToListAsync();
         }
 
         // GET: api/Comentarios/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Comentario>> GetComentario(int id)
         {
-            var comentario = await _context.Comentarios.FindAsync(id);
+            var comentario = await _context.Comentarios.Include(c => c.Usuario).FirstOrDefaultAsync(c => c.Id == id);
 
             if (comentario == null)
             {
@@ -43,7 +50,6 @@ namespace UcneGuideApi.Controllers
         }
 
         // PUT: api/Comentarios/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutComentario(int id, Comentario comentario)
         {
@@ -74,10 +80,24 @@ namespace UcneGuideApi.Controllers
         }
 
         // POST: api/Comentarios
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Comentario>> PostComentario(Comentario comentario)
         {
+            // Obtener el ID del usuario desde el token JWT
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // Buscar el usuario por el Id (para establecer la relación)
+            var usuario = await _userManager.FindByIdAsync(userId);
+
+            if (usuario == null)
+            {
+                return Unauthorized(new { message = "Usuario no autenticado" });
+            }
+
+            // Asignar el usuario a la sugerencia
+            comentario.UsuarioId = userId;
+            comentario.Usuario = usuario;
+
             _context.Comentarios.Add(comentario);
             await _context.SaveChangesAsync();
 

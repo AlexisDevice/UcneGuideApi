@@ -5,34 +5,41 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Security.Claims;
 using UcneGuideApi.DAL;
 using UcneGuideApi.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace UcneGuideApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class SugerenciasController : ControllerBase
     {
         private readonly Contexto _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public SugerenciasController(Contexto context)
+        public SugerenciasController(Contexto context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: api/Sugerencias
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Sugerencia>>> GetSugerencias()
         {
-            return await _context.Sugerencias.ToListAsync();
+            return await _context.Sugerencias.Include(s => s.Usuario).ToListAsync();
         }
 
         // GET: api/Sugerencias/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Sugerencia>> GetSugerencia(int id)
         {
-            var sugerencia = await _context.Sugerencias.FindAsync(id);
+            var sugerencia = await _context.Sugerencias.Include(s => s.Usuario).FirstOrDefaultAsync(s => s.Id == id);
 
             if (sugerencia == null)
             {
@@ -43,7 +50,6 @@ namespace UcneGuideApi.Controllers
         }
 
         // PUT: api/Sugerencias/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutSugerencia(int id, Sugerencia sugerencia)
         {
@@ -74,10 +80,24 @@ namespace UcneGuideApi.Controllers
         }
 
         // POST: api/Sugerencias
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Sugerencia>> PostSugerencia(Sugerencia sugerencia)
         {
+            // Obtener el ID del usuario desde el token JWT
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // Buscar el usuario por el Id (para establecer la relación)
+            var usuario = await _userManager.FindByIdAsync(userId);
+
+            if (usuario == null)
+            {
+                return Unauthorized(new { message = "Usuario no autenticado" });
+            }
+
+            // Asignar el usuario a la sugerencia
+            sugerencia.UsuarioId = userId;
+            sugerencia.Usuario = usuario;
+
             _context.Sugerencias.Add(sugerencia);
             await _context.SaveChangesAsync();
 
