@@ -13,6 +13,7 @@ namespace UcneGuideApi.DAL
         public DbSet<Profesor> Profesores { get; set; }
         public DbSet<Comentario> Comentarios { get; set; }
         public DbSet<Sugerencia> Sugerencias { get; set; }
+        public DbSet<Carrera> Carreras { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
