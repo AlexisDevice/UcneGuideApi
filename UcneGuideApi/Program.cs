@@ -22,6 +22,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<Contexto>()
     .AddDefaultTokenProviders();
 
+
+
 // Generar clave JWT de forma programática
 string jwtKey;
 using (var rng = new RNGCryptoServiceProvider())

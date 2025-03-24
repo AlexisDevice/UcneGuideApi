@@ -37,7 +37,7 @@ public class AuthController : ControllerBase
         if (userExists != null)
             return BadRequest(new { message = "El correo ya está registrado" });
 
-        var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+        var user = new ApplicationUser { UserName = model.UserName, Email = model.Email };
         var result = await _userManager.CreateAsync(user, model.Password);
 
         if (!result.Succeeded)
