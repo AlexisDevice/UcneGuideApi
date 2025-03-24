@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -32,7 +32,6 @@ public class AuthController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        // Verificar si el correo ya está en uso
         var userExists = await _userManager.FindByEmailAsync(model.Email);
         if (userExists != null)
             return BadRequest(new { message = "El correo ya está registrado" });
@@ -49,9 +48,15 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginModel model)
     {
-        var user = await _userManager.FindByEmailAsync(model.Email);
+        ApplicationUser user;
+
+        if (model.Login.Contains("@"))
+            user = await _userManager.FindByEmailAsync(model.Login);
+        else
+            user = await _userManager.FindByNameAsync(model.Login);
+
         if (user == null)
-            return Unauthorized(new { message = "El usuario no existe" });
+            return Unauthorized(new { message = "Usuario no encontrado" });
 
         var signInResult = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
         if (!signInResult.Succeeded)
@@ -59,7 +64,6 @@ public class AuthController : ControllerBase
 
         var token = GenerateJwtToken(user);
 
-        // Retornar el token junto con detalles del usuario
         return Ok(new
         {
             token,
@@ -83,9 +87,9 @@ public class AuthController : ControllerBase
 
         var token = new JwtSecurityToken(
             issuer: _config["Jwt:Issuer"],
-            audience: _config["Jwt:Issuer"],
+            audience: _config["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(1),  // Cambiar a 1 hora si lo prefieres
+            expires: DateTime.UtcNow.AddHours(1),
             signingCredentials: creds
         );
 

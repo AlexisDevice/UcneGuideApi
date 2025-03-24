@@ -5,7 +5,7 @@ namespace UcneGuideApi.Models;
 public class LoginModel
 {
     [Required]
-    public string Email { get; set; }
+    public string Login { get; set; } // Puede ser username o email
 
     [Required]
     public string Password { get; set; }
