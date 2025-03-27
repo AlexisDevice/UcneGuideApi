@@ -47,7 +47,7 @@ namespace UcneGuideApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutMateria(int id, Materia materia)
         {
-            if (id != materia.Id)
+            if (id != materia.MateriaId)
             {
                 return BadRequest();
             }
@@ -81,7 +81,7 @@ namespace UcneGuideApi.Controllers
             _context.Materias.Add(materia);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetMateria", new { id = materia.Id }, materia);
+            return CreatedAtAction("GetMateria", new { id = materia.MateriaId }, materia);
         }
 
         // DELETE: api/Materias/5
@@ -102,7 +102,7 @@ namespace UcneGuideApi.Controllers
 
         private bool MateriaExists(int id)
         {
-            return _context.Materias.Any(e => e.Id == id);
+            return _context.Materias.Any(e => e.MateriaId == id);
         }
     }
 }

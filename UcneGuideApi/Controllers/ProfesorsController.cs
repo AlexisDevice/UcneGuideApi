@@ -47,7 +47,7 @@ namespace UcneGuideApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutProfesor(int id, Profesor profesor)
         {
-            if (id != profesor.Id)
+            if (id != profesor.ProfesorId)
             {
                 return BadRequest();
             }
@@ -81,7 +81,7 @@ namespace UcneGuideApi.Controllers
             _context.Profesores.Add(profesor);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetProfesor", new { id = profesor.Id }, profesor);
+            return CreatedAtAction("GetProfesor", new { id = profesor.ProfesorId }, profesor);
         }
 
         // DELETE: api/Profesors/5
@@ -102,7 +102,7 @@ namespace UcneGuideApi.Controllers
 
         private bool ProfesorExists(int id)
         {
-            return _context.Profesores.Any(e => e.Id == id);
+            return _context.Profesores.Any(e => e.ProfesorId == id);
         }
     }
 }
