@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using UcneGuideApi.DAL;
 
 namespace UcneGuideApi.Models
@@ -8,9 +9,11 @@ namespace UcneGuideApi.Models
     public class Sugerencia
     {
         [Key]
-        public int Id { get; set; }
+        public int SugerenciaId { get; set; }
         public string Contenido { get; set; }
-        public string UsuarioId { get; set; }
-        public ApplicationUser Usuario { get; set; }
+
+        [ForeignKey("UsuarioId")]
+        public int UsuarioId { get; set; }
+        
     }
 }
