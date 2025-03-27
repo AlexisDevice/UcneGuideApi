@@ -10,7 +10,33 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new() { Title = "UcneGuideApi", Version = "v1" });
+
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Ingrese el token JWT con el prefijo 'Bearer '",
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey
+    });
+
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 builder.Services.AddControllers();
 
 // Configurar DbContext
@@ -22,16 +48,15 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<Contexto>()
     .AddDefaultTokenProviders();
 
-
-
 // Generar clave JWT de forma programática
-string jwtKey;
-using (var rng = new RNGCryptoServiceProvider())
-{
-    byte[] secretKey = new byte[32];
-    rng.GetBytes(secretKey);
-    jwtKey = Convert.ToBase64String(secretKey);
-}
+// string jwtKey;
+//using (var rng = new RNGCryptoServiceProvider())                              Clave Aleatoria
+// {
+//byte[] secretKey = new byte[32];
+//rng.GetBytes(secretKey);
+//jwtKey = Convert.ToBase64String(secretKey);
+//
+string jwtKey = "SuperClaveJWT_Secreta_Y_Segura_2025!"; // Usa una clave larga y segura
 
 // Almacenar la clave en la configuración en tiempo de ejecución
 builder.Configuration["Jwt:Key"] = jwtKey;
@@ -95,7 +120,6 @@ using (var scope = app.Services.CreateScope())
         await userManager.AddToRoleAsync(adminUser, "Admin");
     }
 }
-
 
 app.UseCors("AllowAllOrigins");
 
